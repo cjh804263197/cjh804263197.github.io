@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>JavaScript设计模式之迭代器模式 | 陈嘉辉的个人博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="迭代器是我们平时编码中最常用的一个功能，通常由编程语言给我们提供，因此我们自定义迭代器的情况却很少，因此对于迭代器模式的具体实现也不是清楚，下面我们就一起来学习一下在JavaScript中如何实现一个自定义迭代器。 定义迭代器模式是指提供一种方法顺序的访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。在面向对象语言中UML图如下所示：   聚集类：Aggregate(抽象类)和Concret">
+<meta name="keywords" content="设计模式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaScript设计模式之迭代器模式">
+<meta property="og:url" content="http://yoursite.com/2018/08/26/JavaScript设计模式之迭代器模式/index.html">
+<meta property="og:site_name" content="陈嘉辉的个人博客">
+<meta property="og:description" content="迭代器是我们平时编码中最常用的一个功能，通常由编程语言给我们提供，因此我们自定义迭代器的情况却很少，因此对于迭代器模式的具体实现也不是清楚，下面我们就一起来学习一下在JavaScript中如何实现一个自定义迭代器。 定义迭代器模式是指提供一种方法顺序的访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。在面向对象语言中UML图如下所示：   聚集类：Aggregate(抽象类)和Concret">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://ww1.sinaimg.cn/large/d8f33188ly1funesgvchxj20h40bpq3t.jpg">
+<meta property="og:updated_time" content="2018-10-16T15:10:34.606Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JavaScript设计模式之迭代器模式">
+<meta name="twitter:description" content="迭代器是我们平时编码中最常用的一个功能，通常由编程语言给我们提供，因此我们自定义迭代器的情况却很少，因此对于迭代器模式的具体实现也不是清楚，下面我们就一起来学习一下在JavaScript中如何实现一个自定义迭代器。 定义迭代器模式是指提供一种方法顺序的访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。在面向对象语言中UML图如下所示：   聚集类：Aggregate(抽象类)和Concret">
+<meta name="twitter:image" content="http://ww1.sinaimg.cn/large/d8f33188ly1funesgvchxj20h40bpq3t.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="陈嘉辉的个人博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">陈嘉辉的个人博客</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-JavaScript设计模式之迭代器模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/26/JavaScript设计模式之迭代器模式/" class="article-date">
+  <time datetime="2018-08-26T15:31:03.000Z" itemprop="datePublished">2018-08-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      JavaScript设计模式之迭代器模式
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>迭代器是我们平时编码中最常用的一个功能，通常由编程语言给我们提供，因此我们自定义迭代器的情况却很少，因此对于迭代器模式的具体实现也不是清楚，下面我们就一起来学习一下在JavaScript中如何实现一个自定义迭代器。</p>
+<h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>迭代器模式是指提供一种方法顺序的访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。在面向对象语言中UML图如下所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1funesgvchxj20h40bpq3t.jpg" alt=""></p>
+<ul>
+<li><p>聚集类：Aggregate(抽象类)和ConcreteAggregate(具体聚集类)表示聚集类，是用来存储迭代器的数据。在Aggregate(抽象类)中有一个CreateIterator方法，用来获取迭代器</p>
+</li>
+<li><p>迭代器：迭代器用来为聚集类提供服务，提供了一系列访问聚集类对象元素的方法。</p>
+</li>
+</ul>
+<h4 id="JavaScript中的迭代器"><a href="#JavaScript中的迭代器" class="headerlink" title="JavaScript中的迭代器"></a>JavaScript中的迭代器</h4><pre><code>JavaScript中的迭代器可以分为两种，一种是**内部迭代器**，另一种是**外部迭代器**，单从字面上我们并不能区分出这两种迭代器有什么区别，下面我们从定义以及实现来让大家直观的看出这两种迭代器的区别以及其各自用途。
+</code></pre><h5 id="内部迭代器"><a href="#内部迭代器" class="headerlink" title="内部迭代器"></a>内部迭代器</h5><pre><code>内部迭代器在调用的时候非常方便，外界不用关心迭代器内部的实现，跟迭代器的交互也仅仅是一次初始调用，下面我们来实现一个内部迭代器：
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// 定义内部迭代器</span><br><span class="line">let forEach = (arry, callback) =&gt; &#123;</span><br><span class="line">  // 迭代规则</span><br><span class="line">  for(let i = 0; i&lt; arry.length; i++) &#123;</span><br><span class="line">    callback(arry[i], i)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">// 执行迭代器</span><br><span class="line">forEach([a, b, c, d], (item, index) =&gt; &#123;</span><br><span class="line">  console.log(item) // 输出：a b c d</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<pre><code>如上代码所示，内部迭代器的迭代规则是提前设定好的，因此对于调用该迭代器的对象来说局限性也是很大的，这也正是内部迭代器的缺点。
+</code></pre><h5 id="外部迭代器"><a href="#外部迭代器" class="headerlink" title="外部迭代器"></a>外部迭代器</h5><pre><code>外部迭代器增加了一些调用的复杂度，但相对也增强了迭代器的灵活性，我们可以手工控制迭代的过程或者顺序。外部迭代器的示例代码如下：
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// 定义外部迭代器类</span><br><span class="line">class Iterator &#123;</span><br><span class="line">    // 构造函数</span><br><span class="line">    constructor(arry) &#123;</span><br><span class="line">        this.currentIndex = 0;</span><br><span class="line">        this.arry = arry</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 当前数组下标后移一位，若还有下一位，则返回true 若没有下一位，则范围false</span><br><span class="line">    next() &#123;</span><br><span class="line">        if (this.currentIndex &lt; (this.arry.length - 1)) &#123;</span><br><span class="line">            this.currentIndex++</span><br><span class="line">            return true</span><br><span class="line">        &#125;</span><br><span class="line">        return false</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 获取当前下标的对象</span><br><span class="line">    getCurrentItem() &#123;</span><br><span class="line">        return this.arry[this.currentIndex]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">let iterator = new Iterator([1, 2, 3, 4, 5])</span><br><span class="line">while(iterator.next()) &#123;</span><br><span class="line">    console.log(iterator.getCurrentItem()) // 最终输出1 2 3 4 5</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>外部迭代器虽然调用方式相对复杂，但它的适用面更广，也能满足更多变的需求。</p>
+<h5 id="终止迭代器"><a href="#终止迭代器" class="headerlink" title="终止迭代器"></a>终止迭代器</h5><p>终止迭代器就是提供一种可以跳出循环的方法，类似于for循环中的break，示例代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// 定义终止迭代器</span><br><span class="line">let forEach = (arry, callback) =&gt; &#123;</span><br><span class="line">  // 迭代规则</span><br><span class="line">  for(let i = 0; i&lt; arry.length; i++) &#123;</span><br><span class="line">    if (!callback(arry[i], i)) break;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">// 执行迭代器</span><br><span class="line">forEach([2, 4, 6, 7, 8], (item, index) =&gt; &#123;</span><br><span class="line">	console.log(item) // 输出：2 4 6 7</span><br><span class="line">	return item%2 !== 0 // 当item不为偶数时终止</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><pre><code>迭代器模式是一种比较简单的设计模式，但是实际开发中使用频率也是非常高的，学会此模式有助于我们对迭代的更深层次的理解。
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/26/JavaScript设计模式之迭代器模式/" data-id="cjnbvav5e000fz0fy3q9iyc2i" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/09/04/JavaScript设计模式之发布订阅模式/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          JavaScript设计模式之发布订阅模式
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/08/19/JavaScript设计模式之代理模式/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">JavaScript设计模式之代理模式</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNPM/">CNPM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/CNPM/" style="font-size: 10px;">CNPM</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/设计模式/" style="font-size: 20px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/10/16/JavaScript设计模式之模板方法模式/">JavaScript设计模式之模板方法模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/25/基于Docker搭建CNPM私有仓库/">基于Docker搭建CNPM私有仓库</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/17/JavaScript设计模式之组合模式/">JavaScript设计模式之组合模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/09/JavaScript设计模式之命令模式/">JavaScript设计模式之命令模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/04/JavaScript设计模式之发布订阅模式/">JavaScript设计模式之发布订阅模式</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

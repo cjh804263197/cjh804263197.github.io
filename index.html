@@ -65,6 +65,525 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-JavaScript设计模式之模板方法模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/10/16/JavaScript设计模式之模板方法模式/" class="article-date">
+  <time datetime="2018-10-16T14:37:12.000Z" itemprop="datePublished">2018-10-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/10/16/JavaScript设计模式之模板方法模式/">JavaScript设计模式之模板方法模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>模板方法是我们在编码中最常接触的一种设计模式，只需使用继承就可以实现的非常简单的模式。</p>
+<h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>模板方法模式由两部分结构组成，第一部分是抽象父类，第二部分是具体的实现子类。通常 在抽象父类中封装了子类的算法框架，包括实现一些公共方法以及封装子类中所有方法的执行顺 序。子类通过继承这个抽象类，也继承了整个算法结构，并且可以选择重写父类的方法。其UML图如下所示</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188gy1fw9ywkg4kxj20en0a1dg9.jpg" alt=""></p>
+<ul>
+<li><strong>Abstract Class</strong> 在抽象模板中，定义算法框架，主要步骤等</li>
+<li><strong>Concrete Class</strong> 在具体模板中来实现父类中的具体步骤</li>
+</ul>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>下面我们以茶与咖啡这个经典例子来向大家清楚的介绍什么是模板方法。想象一下，我们在泡茶与咖啡时通常有以下的共同点：</p>
+<ul>
+<li>将水煮沸</li>
+<li>用沸水冲泡茶或咖啡</li>
+<li>将冲泡好的茶或咖啡倒入杯中</li>
+<li>加入辅料，例如茶可以加些柠檬、咖啡可以加些牛奶和糖</li>
+</ul>
+<p>经过以上分析，我们发现咖啡和茶的冲泡过程是大同小异的，因此我们可以将这些相似的步骤抽象出来一个饮料来当做模板方法中的抽象模板，而茶和咖啡作为具体模板继承饮料抽象模板实现其相应的方法就可以了。</p>
+<h5 id="问题一"><a href="#问题一" class="headerlink" title="问题一"></a>问题一</h5><p>在 Java 中编译器会保证子类会重写父类中的抽象方法，但在 JavaScript 中却没有进行这些检查工作。我们在编写代码的时候得不到任何形式的警告，完全寄托于程序员的记忆力和自觉性是很危险的，特别是当我们使用模板方法模式这种完全依赖继承而实现的设计模式时。</p>
+<h5 id="问题二"><a href="#问题二" class="headerlink" title="问题二"></a>问题二</h5><p>虽然以上4个步骤适用于绝大多数的人，但是存在一些人不喜欢在泡茶或咖啡的时候加入辅料。对于已经规定好了冲泡饮料的 4 个步骤，那么有什么办法可以让子类不受这个约束呢?</p>
+<h5 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h5><p>针对于问题一，我们可以在抽象模板中需要子类重写的方法中抛出一个错误，如果子类忘记重写该方法，则程序在运行时会报错。</p>
+<p>针对于问题二，钩子方法(hook)可以用来解决这个问题，放置钩子是隔离变化的一种常见手段。我们在父类中容易变化的地方放置钩子，钩子可以有一个默认的实现，究竟要不要“挂钩”，这由子类自行决定。</p>
+<p>下面我用代码来模拟这个例子，首先我们来实现抽象模板——饮料类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">// 抽象模板--饮料类</span><br><span class="line">class Beverage &#123;</span><br><span class="line"></span><br><span class="line">    init() &#123;</span><br><span class="line">        this.boilWater()</span><br><span class="line">        this.brew()</span><br><span class="line">        this.pourInCup()</span><br><span class="line">        if (this.customerWantsCondiments()) &#123; // 如果挂钩返回true，则需要调料</span><br><span class="line">            this.addCondiments()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 烧水</span><br><span class="line">     */</span><br><span class="line">    boilWater() &#123;</span><br><span class="line">        console.log(&apos;把水煮沸&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 用沸水冲泡</span><br><span class="line">     */</span><br><span class="line">    brew() &#123;</span><br><span class="line">        throw new Error(&apos;子类必须重写brew方法&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 倒进杯中</span><br><span class="line">     */</span><br><span class="line">    pourInCup() &#123;</span><br><span class="line">        throw new Error(&apos;子类必须重写pourInCup方法&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 添加辅料</span><br><span class="line">     */</span><br><span class="line">    addCondiments() &#123;</span><br><span class="line">        throw new Error(&apos;子类必须重写addCondiments方法&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 是否需要添加辅料钩子函数</span><br><span class="line">     */</span><br><span class="line">    customerWantsCondiments() &#123;</span><br><span class="line">        return true //默认为true 需要</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>茶类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">class Tea extends Beverage&#123;</span><br><span class="line">    brew() &#123;</span><br><span class="line">        console.log(&apos;用沸水冲泡茶&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pourInCup() &#123;</span><br><span class="line">        console.log(&apos;将茶倒入杯中&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    addCondiments() &#123;</span><br><span class="line">        console.log(&apos;添加柠檬&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    customerWantsCondiments() &#123;</span><br><span class="line">        return false // 不要辅料</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fwafrptcjxj21ps05q0tq.jpg" alt=""></p>
+<p>咖啡类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">class Coffee extends Beverage&#123;</span><br><span class="line">    brew() &#123;</span><br><span class="line">        console.log(&apos;用沸水冲咖啡&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pourInCup() &#123;</span><br><span class="line">        console.log(&apos;将咖啡倒入杯中&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    addCondiments() &#123;</span><br><span class="line">        console.log(&apos;添加糖和牛奶&apos;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    customerWantsCondiments() &#123;</span><br><span class="line">        return true // 添加辅料</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">const coffee = new Coffee()</span><br><span class="line">coffee.init()</span><br></pre></td></tr></table></figure>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fwafqz2ilmj21py06wjsr.jpg" alt=""></p>
+<h4 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h4><p>假如我们有一些平行的子类，各个子类之间有一些相同的行为，也有一些不同的行为。如果相同和不同的行为都混合在各个子类的实现中，说明这些相同的行为会在各个子类中重复出现。但实际上，相同的行为可以被搬移到另一个单一的地方，模板方法模式就是为解决这个问题而生的。在模板方法模式中，子类实现中的相同部分被上移到父类中，而将不同的部分留待子类来实现。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/10/16/JavaScript设计模式之模板方法模式/" data-id="cjnbvav570005z0fy8a31qaod" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-基于Docker搭建CNPM私有仓库" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/25/基于Docker搭建CNPM私有仓库/" class="article-date">
+  <time datetime="2018-09-25T11:20:11.000Z" itemprop="datePublished">2018-09-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/25/基于Docker搭建CNPM私有仓库/">基于Docker搭建CNPM私有仓库</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h3><ul>
+<li><p>git仓库下克隆<strong>cnpmjs.org</strong>项目</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/cnpm/cnpmjs.org.git</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>进入到cnpmjs.org项目内</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd cnpmjs.org</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看Dockerfile文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">## 引用node镜像</span><br><span class="line">FROM node:6.11</span><br><span class="line">## 作者</span><br><span class="line">MAINTAINER Bono Lv &lt;lvscar  &#123;aT&#125; gmail.com&gt;</span><br><span class="line"></span><br><span class="line"># Working enviroment工作环境</span><br><span class="line">ENV \</span><br><span class="line">    CNPM_DIR=&quot;/var/app/cnpmjs.org&quot; \</span><br><span class="line">    CNPM_DATA_DIR=&quot;/var/data/cnpm_data&quot; </span><br><span class="line">    </span><br><span class="line"># 执行命令，在容器中创建目录</span><br><span class="line">RUN mkdir  -p $&#123;CNPM_DIR&#125;</span><br><span class="line"></span><br><span class="line">## 设置工作目录</span><br><span class="line">WORKDIR $&#123;CNPM_DIR&#125;</span><br><span class="line"></span><br><span class="line">## 将package.json文件拷贝到容器的指定目录下</span><br><span class="line">COPY package.json $&#123;CNPM_DIR&#125;</span><br><span class="line"></span><br><span class="line">## 设置容器中的npm镜像地址</span><br><span class="line">RUN npm set registry https://registry.npm.taobao.org</span><br><span class="line"></span><br><span class="line">## 下载依赖</span><br><span class="line">RUN npm install</span><br><span class="line"></span><br><span class="line">## 将宿主机中cnpmjs.org项目下的所有文件拷贝到容器的指定目录中</span><br><span class="line">COPY .  $&#123;CNPM_DIR&#125;</span><br><span class="line"></span><br><span class="line">## 将宿主机中config.js文件拷贝到容器中指定路径下config目录下，此步非常关键，也就是说容器中将使用## config.js来当做cnpmjs的配置文件</span><br><span class="line">COPY docs/dockerize/config.js  $&#123;CNPM_DIR&#125;/config/</span><br><span class="line"></span><br><span class="line">## 开放7001和7002端口</span><br><span class="line">EXPOSE 7001/tcp 7002/tcp</span><br><span class="line"></span><br><span class="line">## 挂载数据卷绑定给宿主机</span><br><span class="line">VOLUME [&quot;/var/data/cnpm_data&quot;]</span><br><span class="line"></span><br><span class="line"># Entrypoint容器启动命令</span><br><span class="line">CMD [&quot;node&quot;, &quot;dispatch.js&quot;]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>找到<code>docs/dockerize/config.js</code>文件，因为其是cnpmjs的配置文件，所以要修改其中几处配置</p>
+<ul>
+<li>在mysql中新建数据库<code>cnpmjs</code>,<code>cnpmjs.org/docs/db.sql</code>文件导入数据库，完成建表工作</li>
+<li>修改<code>config.js</code>文件</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">## enableCompress设置为true</span><br><span class="line">enableCompress: true</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">## 修改数据库配置</span><br><span class="line">database: &#123;</span><br><span class="line">    db: &apos;cnpmjs&apos;,</span><br><span class="line">    username: &apos;root&apos;,</span><br><span class="line">    // 填写数据库密码</span><br><span class="line">    password: &apos;&apos;,</span><br><span class="line">    // 数据源设置为mysql</span><br><span class="line">    dialect: &apos;mysql&apos;,</span><br><span class="line">    // 设置数据库Host地址(注意：如果mysql也运行在docker容器中的话，此处应填写宿主机的ip地址)</span><br><span class="line">    host: &apos;192.168.2.112&apos;,</span><br><span class="line">    // 设置mysql端口号</span><br><span class="line">    port: 3306,</span><br><span class="line">    // 其他不需要修改，略...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">## 修改镜像地址</span><br><span class="line">registryHost: &apos;你的Host地址:7001&apos;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>接下来我们要构建镜像，在<code>cnpmjs.org</code>文件夹下执行docker build命令，构建镜像（构建过程中需要下载依赖包，时间较长请耐心等待）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t cjh/cnpmjs:20180911</span><br></pre></td></tr></table></figure>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fv5vnc9reij20a3011glh.jpg" alt=""></p>
+<p>当出现successfully字样的时候就说明已经构建成功了，此时我们执行查看镜像列表命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker image ls</span><br></pre></td></tr></table></figure>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fv5vqlrvl4j20nw011jrc.jpg" alt=""></p>
+<p>此时我们刚刚构建的镜像就在列表中。</p>
+</li>
+<li><p>然后我们使用构建好的镜像来运行cnpmjs容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run </span><br><span class="line">	-d \</span><br><span class="line">	-p 7001:7001 \</span><br><span class="line">	-p 7002:7002 \</span><br><span class="line">	-v /home/cnpm/cnpm_data:/var/data/cnpm_data \</span><br><span class="line">	--restart always \</span><br><span class="line">	--name cnpmjs \</span><br><span class="line">	cjh/cnpmjs:20180911</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>-d</strong> 容器在后台运行，并在成功启动容器后输出容器的完整ID</li>
+<li><strong>-p</strong> 设置宿主机端口与容器内端口的映射关系</li>
+<li><strong>-v</strong> 宿主机与容器内文件映射</li>
+</ul>
+<p>待容器启动成功之后，我们来查看正在运行的容器列表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps</span><br></pre></td></tr></table></figure>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fv5vz7shimj20zw021glp.jpg" alt=""></p>
+</li>
+<li><p>通过浏览器访问，CNPM服务：<code>http://192.168.2.112:7002</code></p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fv5w1juxvrj20xm0oigo5.jpg" alt=""></p>
+</li>
+</ul>
+<p>大功告成！关于怎么使用cnpm私有仓库请参考<a href="http://techblog.sishuxuefu.com/atricle.html?5baae4ac0b61600066fe7d24" target="_blank" rel="noopener">cnpm私有仓库之正确打开方式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/25/基于Docker搭建CNPM私有仓库/" data-id="cjnbvav5d000dz0fyxvoin19b" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CNPM/">CNPM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/">Docker</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之组合模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/17/JavaScript设计模式之组合模式/" class="article-date">
+  <time datetime="2018-09-17T13:07:54.000Z" itemprop="datePublished">2018-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/17/JavaScript设计模式之组合模式/">JavaScript设计模式之组合模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>上周学习了命令模式，本周我们来学习一个类似于宏命令的一种设计模式——组合模式。什么是组合模式？组合模式可以让我们使用树形方式创建对象的结构。我们可以把相同的操作应用在组合对象和单个对象上。在大多数情况下，我们都 可以忽略掉组合对象和单个对象之间的差别，从而用一致的方式来处理它们。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>组合模式，将对象组合成树形结构以表示“部分-整体”的层次结构，组合模式使得用户对单个对象和组合对象的使用具有一致性。其UML图如下所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fvcw2pvs2dj21560hegpj.jpg" alt=""></p>
+<ul>
+<li><strong>Component</strong> 是组合中的对象声明接口，在适当的情况下，实现所有类共有接口的默认行为。声明一个接口用于访问和管理Component子部件。</li>
+<li><strong>Leaf </strong>在组合中表示叶子结点对象，叶子结点没有子结点。</li>
+<li><strong>Composite</strong> 定义有枝节点行为，用来存储子部件，在Component接口中实现与子部件有关操作，如增加(add)和删除(remove)等。</li>
+</ul>
+<h4 id="JavaScript中的组合模式"><a href="#JavaScript中的组合模式" class="headerlink" title="JavaScript中的组合模式"></a>JavaScript中的组合模式</h4><p>JavaScript 中实现组合模式的难点在于要保证组合对象和叶对象对象拥有同样的方法，这通常需要用鸭子类型的思想对它们进行接口检查。在 JavaScript 中实现组合模式，看起来缺乏一些严谨性，我们的代码算不上安全，但能更快速和自由地开发，这既是 JavaScript 的缺点，也是它的优点。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>下面我们用组合模式来实现一个常见的例子，文件夹和文件之间的关系，非常适合用组合模式来描述。文件夹里既可以包含文件，又可以包含其他文件夹，最终可能组合成一棵树。首先我们需要构造的文件结构如下图所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fvcwndybsdj20s607et99.jpg" alt=""></p>
+<p>代码实现如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">// 文件夹类</span><br><span class="line">class Folder &#123;</span><br><span class="line">    constructor(name) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">        this.parent = null</span><br><span class="line">        this.components = []</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 添加方法</span><br><span class="line">     */</span><br><span class="line">    add(component) &#123;</span><br><span class="line">        component.parent = this</span><br><span class="line">        this.components.push(component)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 扫描方法</span><br><span class="line">     */</span><br><span class="line">    scan() &#123;</span><br><span class="line">        console.log(&apos;开始扫描文件夹&apos; + this.name)</span><br><span class="line">        this.components.forEach(component =&gt; &#123;</span><br><span class="line">            component.scan()</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 移除方法</span><br><span class="line">     */</span><br><span class="line">    remove() &#123;</span><br><span class="line">        if (!this.parent) return //根节点或者树外的游离节点</span><br><span class="line">        this.parent.components.forEach((component, index) =&gt; &#123;</span><br><span class="line">            if (component === this) this.parent.components.split(index, 1)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 文件类</span><br><span class="line">class File &#123;</span><br><span class="line">    constructor(name) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">        this.parent = null</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 添加方法</span><br><span class="line">     */</span><br><span class="line">    add() &#123;</span><br><span class="line">        throw new Error(&apos;不能添加在文件下面&apos;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 扫描方法</span><br><span class="line">     */</span><br><span class="line">    scan() &#123;</span><br><span class="line">        console.log(&apos;开始扫描文件&apos; + this.name)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 移除方法</span><br><span class="line">     */</span><br><span class="line">    remove() &#123;</span><br><span class="line">        if (!this.parent) return //根节点或者树外的游离节点</span><br><span class="line">        this.parent.components.forEach((component, index) =&gt; &#123;</span><br><span class="line">            if (component === this) this.parent.components.split(index, 1)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 创建文件夹</span><br><span class="line">const myFolder = new Folder(&apos;我的学习资料&apos;)</span><br><span class="line">const javaFolder = new Folder(&apos;Java&apos;)</span><br><span class="line">const jsFolder = new Folder(&apos;JavaScript&apos;)</span><br><span class="line">const designPatternFolder = new Folder(&apos;设计模式&apos;)</span><br><span class="line">const javaWebFolder = new Folder(&apos;JavaWeb&apos;)</span><br><span class="line">const reactFolder = new Folder(&apos;React&apos;)</span><br><span class="line">const nodeFolder = new Folder(&apos;Node&apos;)</span><br><span class="line"></span><br><span class="line">// 创建文件</span><br><span class="line">const javaFile = new File(&apos;Java从入门到精通.pdf&apos;)</span><br><span class="line">const springFile = new File(&apos;Spring从入门到精通.pdf&apos;)</span><br><span class="line">const reactFile = new File(&apos;React学习笔记.md&apos;)</span><br><span class="line">const jsFile = new File(&apos;JavaScript设计模式与开发实践.pdf&apos;)</span><br><span class="line"></span><br><span class="line">// 向文件夹中添加文件夹以及文件</span><br><span class="line">myFolder.add(javaFolder)</span><br><span class="line">myFolder.add(jsFolder)</span><br><span class="line">myFolder.add(designPatternFolder)</span><br><span class="line"></span><br><span class="line">javaFolder.add(javaFile)</span><br><span class="line">javaFolder.add(javaWebFolder)</span><br><span class="line">javaWebFolder.add(springFile)</span><br><span class="line"></span><br><span class="line">jsFolder.add(reactFile)</span><br><span class="line"></span><br><span class="line">designPatternFolder.add(jsFile)</span><br><span class="line"></span><br><span class="line">myFolder.scan()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fvcxn4quwpj21cg0ban0m.jpg" alt=""></p>
+<p>移除操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 移除</span><br><span class="line">jsFolder.remove()</span><br><span class="line">myFolder.scan()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fvcxomjtb7j21cu08omzw.jpg" alt=""></p>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>组合模式如果运用得当，可以大大简化客户的代码。当有以下两种情况出现的时候我们就可以使用组合模式：</p>
+<ul>
+<li><strong>表示对象的部分-整体层次结构</strong> 组合模式可以方便地构造一棵树来表示对象的部分整 体结构。特别是我们在开发期间不确定这棵树到底存在多少层次的时候。 </li>
+<li><strong>统一对待树种所有的对象 </strong>组合模式使客户可以忽略组合对象和叶对象的区别， 客户在面对这棵树的时候，不用关心当前正在处理的对象是组合对象还是叶对象，也就 不用写一堆 if、else 语句来分别处理它们。 </li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/17/JavaScript设计模式之组合模式/" data-id="cjnbvav590008z0fyggcrv9m5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之命令模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/09/JavaScript设计模式之命令模式/" class="article-date">
+  <time datetime="2018-09-09T15:54:47.000Z" itemprop="datePublished">2018-09-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/09/JavaScript设计模式之命令模式/">JavaScript设计模式之命令模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>命令模式对于我来说是一种较为陌生的设计模式，我们用一个生活中的一个例子来引出今天的主角<strong>命令模式</strong>。假设有一个快餐店，而我是该餐厅的点餐服务员，每天当客人点餐或者打来订餐电话后，我会把他的需求都写在清上，然后交给厨房，客人不用关心是哪些厨师帮他炒菜。这些记录着订餐信息的清单，便是命令模式的命令对象。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>有时候需要向某些对象发送请求，但是并不知道请求的接收者是谁，也不知道被请求的操作是什么。此时希望用一种松耦合的方式来设计程序，使得请求发送者和请求接收者能够消除彼此的耦合关系。其UML图如下所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fv3eqa1r96j20pi0aoju1.jpg" alt=""></p>
+<ul>
+<li><p><strong>Command</strong></p>
+<p>定义命令的接口，声明执行的方法。</p>
+</li>
+<li><p><strong>Receiver</strong></p>
+<p>接收者，真正执行命令的对象，任何类都可能成为一个接收者，只要它能够实现命令要求实现的相应功能。</p>
+</li>
+<li><p><strong>ConcreteCommand</strong></p>
+<p>命令接口实现对象，通常会持有接收者，并调用接收者的功能来完成命令要执行的操作。</p>
+</li>
+<li><p><strong>Invoker</strong></p>
+<p>要求命令对象执行请求，通常会持有命令对象，可以持有很多的命令对象。</p>
+</li>
+<li><p><strong>Client</strong></p>
+<p>注意不是常规意义上的客户端，其主要作用是创建具体的命令对象，并且设置命令对象的接收者。</p>
+</li>
+</ul>
+<h4 id="JavaScript中命令模式的实现思路"><a href="#JavaScript中命令模式的实现思路" class="headerlink" title="JavaScript中命令模式的实现思路"></a>JavaScript中命令模式的实现思路</h4><ul>
+<li>命令模式的接受者Receiver被当成命令对象Command的属性保存起来</li>
+<li>约定执行命令的操作默认调用execute方法</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><h4 id="基础命令"><a href="#基础命令" class="headerlink" title="基础命令"></a>基础命令</h4><p>首先我们按照命令模式的实现思路来实现一个最简单的命令模式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">// 定义接受者类</span><br><span class="line">class Receive &#123;</span><br><span class="line">    constructor(name) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 保存方法</span><br><span class="line">     */</span><br><span class="line">    save() &#123;</span><br><span class="line">        console.log(`我是$&#123;this.name&#125;的保存操作`)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 删除方法</span><br><span class="line">     */</span><br><span class="line">    delete() &#123;</span><br><span class="line">        console.log(`我是$&#123;this.name&#125;的删除操作`)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 定义保存命令</span><br><span class="line"> */</span><br><span class="line">class SaveCommand &#123;</span><br><span class="line">    constructor(receiver) &#123;</span><br><span class="line">        this.receiver = receiver</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 默认的命令执行方法</span><br><span class="line">     */</span><br><span class="line">    execute() &#123;</span><br><span class="line">        this.receiver.save()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 定义删除命令</span><br><span class="line"> */</span><br><span class="line">class DeleteCommand &#123;</span><br><span class="line">    constructor(receiver) &#123;</span><br><span class="line">        this.receiver = receiver</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 默认的命令执行方法</span><br><span class="line">     */</span><br><span class="line">    execute() &#123;</span><br><span class="line">        this.receiver.delete()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 创建接受者对象</span><br><span class="line">const receiver = new Receive(&apos;哈哈哈&apos;)</span><br><span class="line">// 创建保存命令对象</span><br><span class="line">const saveCommand = new SaveCommand(receiver)</span><br><span class="line">// 创建删除命令对象</span><br><span class="line">const deleteCommand = new SaveCommand(receiver)</span><br><span class="line">// 执行保存命令</span><br><span class="line">saveCommand.execute() //输出：我是哈哈哈的保存操作</span><br><span class="line">// 执行删除命令</span><br><span class="line">deleteCommand.execute() //输出：我是哈哈哈的删除操作</span><br></pre></td></tr></table></figure>
+<h4 id="宏命令"><a href="#宏命令" class="headerlink" title="宏命令"></a>宏命令</h4><p>宏命令是一组命令的集合，通过执行宏命令的方式可以批量执行命令。例如我们在保存一个人员信息（包含有该人员的联系人信息）的时候，该人员与其相关联系人是一对多的关系，因此这两种信息我们要分别进行保存，示例代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">// 人员信息类</span><br><span class="line">class Person &#123;</span><br><span class="line">    constructor(name, age, gender) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">        this.age = age</span><br><span class="line">        this.gender = gender</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 保存方法</span><br><span class="line">     */</span><br><span class="line">    save() &#123;</span><br><span class="line">        // 具体保存方法省略</span><br><span class="line">        console.log(`$&#123;this.name&#125;的信息保存成功`)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 人员联系人信息类</span><br><span class="line">class PersonContact &#123;</span><br><span class="line">    constructor(person) &#123;</span><br><span class="line">        this.person = person</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 保存方法</span><br><span class="line">     */</span><br><span class="line">    save() &#123;</span><br><span class="line">        // 具体保存方法省略</span><br><span class="line">        console.log(`$&#123;this.person.name&#125;的联系人信息保存成功`)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 定义保存命令</span><br><span class="line"> */</span><br><span class="line">class SaveCommand &#123;</span><br><span class="line">    constructor(receiver) &#123;</span><br><span class="line">        this.receiver = receiver</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 默认的命令执行方法</span><br><span class="line">     */</span><br><span class="line">    execute() &#123;</span><br><span class="line">        this.receiver.save()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 定义宏命令</span><br><span class="line"> */</span><br><span class="line">class MacroCommand &#123;</span><br><span class="line">    constructor() &#123;</span><br><span class="line">        this.commandsList = []</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    addCommand(command) &#123;</span><br><span class="line">        this.commandsList.push(command)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    execute() &#123;</span><br><span class="line">        this.commandsList.forEach(command =&gt; &#123;</span><br><span class="line">            command.execute()</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 创建人员信息对象</span><br><span class="line">const person = new Person(&apos;张三&apos;, 21, &apos;男&apos;)</span><br><span class="line">// 创建人员联系人信息对象</span><br><span class="line">const pContact = new PersonContact(person)</span><br><span class="line">// 创建保存命令对象</span><br><span class="line">const saveCommandPerson = new SaveCommand(person)</span><br><span class="line">const saveCommandContact = new SaveCommand(pContact)</span><br><span class="line">// 创建宏命令对象</span><br><span class="line">const macroCommand = new MacroCommand()</span><br><span class="line">macroCommand.addCommand(saveCommandPerson)</span><br><span class="line">macroCommand.addCommand(saveCommandContact)</span><br><span class="line">// 执行宏命令</span><br><span class="line">macroCommand.execute() //输出：张三的信息保存成功 张三的联系人信息保存成功</span><br></pre></td></tr></table></figure>
+<p>上面的例子我们还可以在命令中加入撤销函数，从而在保存方法有异常错误的时候执行撤销函数就可以实现事务回滚，借助命令模式，可以简单地实现一个具有原子事务的行为。当一个事务失败时，往往需要回退到执行前的状态，可以借助命令对象保存这种状态，简单地处理回退操作。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/09/JavaScript设计模式之命令模式/" data-id="cjnbvav560004z0fy28mnv4vp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之发布订阅模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/04/JavaScript设计模式之发布订阅模式/" class="article-date">
+  <time datetime="2018-09-04T04:33:33.000Z" itemprop="datePublished">2018-09-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/04/JavaScript设计模式之发布订阅模式/">JavaScript设计模式之发布订阅模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>发布订阅模式无论是在现实生活中还是在程序的世界中应用都非常之广泛。举个简单的例子，微博是大部分年轻人都会接触使用的一种社交软件，假设在微博中我们关注了一个大V(通常把“粉丝”在50万以上的称为网络<strong>大V</strong>)，当这个大V发布了一条动态后，就会向关注他的所有粉丝推送这条动态，而关注他的粉丝登录微博后就会收到这条动态的推送，这就是一种发布订阅模式。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>发布订阅模式又称观察者模式，它定义对象间一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都将得到通知。其UML图如下所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fuws64657tj20dw07fq3u.jpg" alt=""></p>
+<ul>
+<li><strong>Subject</strong></li>
+</ul>
+<p>作为发布订阅模式中的发布者，其维护了一个所有订阅它的引用集合，并拥有添加、删除观察者以及通知所有观察者的方法</p>
+<ul>
+<li><strong>Observer</strong></li>
+</ul>
+<p>作为发布订阅模式中的订阅者，为所有具体订阅者定义一个接口，在接到发布者的通知时来更新自己</p>
+<p><strong>JavaScript发布订阅模式的实现步骤：</strong></p>
+<ul>
+<li><p>首先要指定好谁充当发布者</p>
+</li>
+<li><p>然后给发布者添加一个缓存列表，用于存放回调函数以便通知订阅者</p>
+</li>
+<li>最后发布消息的时候，发布者会遍历这个缓存列表，依次触发里面存放的订阅者回调函 </li>
+</ul>
+<p>数 </p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>首先我们来实现发布者的基类，所有继承该发布者基类的子类都会成为发布者。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">// 定义发布者基类</span><br><span class="line">class Subject &#123;</span><br><span class="line">    // 构造函数</span><br><span class="line">    constructor() &#123;</span><br><span class="line">        this.observers = []</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 添加订阅者</span><br><span class="line">     */</span><br><span class="line">    add(observer) &#123;</span><br><span class="line">        this.observers.push(obj)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 移除订阅者</span><br><span class="line">     */</span><br><span class="line">    remove(observer) &#123;</span><br><span class="line">        this.observers.forEach((item, index) =&gt; &#123;</span><br><span class="line">            if (item === observer) this.observers.splice(index, 1);</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 通知消息</span><br><span class="line">     * @param &#123;*&#125; msg </span><br><span class="line">     */</span><br><span class="line">    notify(msg) &#123;</span><br><span class="line">        this.observers.forEach(item =&gt; &#123;</span><br><span class="line">            item.receive(this, msg)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后我们来定义一个大V类，继承自Subject</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 定义大V类</span><br><span class="line"> */</span><br><span class="line">class BigV extends Subject &#123;</span><br><span class="line">    constructor(name) &#123;</span><br><span class="line">        super()</span><br><span class="line">        this.name = name</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 获取姓名</span><br><span class="line">     */</span><br><span class="line">    getName() &#123;</span><br><span class="line">        return this.name</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 添加粉丝</span><br><span class="line">     * @param &#123;&#125; fans </span><br><span class="line">     */</span><br><span class="line">    addFans(fans) &#123;</span><br><span class="line">        this.add(fans)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 向粉丝推送消息</span><br><span class="line">     * @param &#123;*&#125; msg </span><br><span class="line">     */</span><br><span class="line">    pushMsg(msg) &#123;</span><br><span class="line">        this.notify(msg)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着我们来定义粉丝类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 定义粉丝类</span><br><span class="line"> */</span><br><span class="line">class Fans &#123;</span><br><span class="line">	constructor(name) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">    &#125;</span><br><span class="line">   /**</span><br><span class="line">	*接受推送消息方法</span><br><span class="line">	*/</span><br><span class="line">    receive(bigV, msg) &#123;</span><br><span class="line">        console.log(`我是粉丝$&#123;this.name&#125;接收到了大V$&#123;bigV.getName&#125;推送的消息：$&#123;msg&#125;`)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">let bigV = new BigV(&apos;Eason&apos;)</span><br><span class="line">let fans1 = new Fans(&apos;Jack&apos;)</span><br><span class="line">let fans2 = new Fans(&apos;Tom&apos;)</span><br><span class="line">bigV.addFans(fans1)</span><br><span class="line">bigV.addFans(fans2)</span><br><span class="line">bigV.pushMsg(&apos;祝大家新年快乐！&apos;)// 输出： 我是粉丝Jack接收到了大VEason推送的消息：祝大家新年快乐！</span><br><span class="line">									  我是粉丝Tom接收到了大VEason推送的消息：祝大家新年快乐！</span><br></pre></td></tr></table></figure>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><pre><code>通过上面的代码我们可以看出发布订阅模式的优点是**解耦**，作为发布者来说不用关心订阅方接收到推送消息之后究竟要做什么，而订阅方则不用关心发布方会何时发布消息。缺点就是创建订阅者本身就会**消耗一部分时间和内存**，有可能订阅消息到最终都未发生，并且过度使用发布订阅模式会导致程序**难以跟踪和理解**。
+</code></pre><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><pre><code>我们学习设计模式的最终目的不是会使用某种设计而已，而是能判断出在哪种情况下可以使用设计模式来进行**解耦**和**优化代码**，这将是我接下来学习设计模式的重点。
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/04/JavaScript设计模式之发布订阅模式/" data-id="cjnbvav520001z0fykm1lavy4" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之迭代器模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/26/JavaScript设计模式之迭代器模式/" class="article-date">
+  <time datetime="2018-08-26T15:31:03.000Z" itemprop="datePublished">2018-08-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/26/JavaScript设计模式之迭代器模式/">JavaScript设计模式之迭代器模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>迭代器是我们平时编码中最常用的一个功能，通常由编程语言给我们提供，因此我们自定义迭代器的情况却很少，因此对于迭代器模式的具体实现也不是清楚，下面我们就一起来学习一下在JavaScript中如何实现一个自定义迭代器。</p>
+<h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>迭代器模式是指提供一种方法顺序的访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。在面向对象语言中UML图如下所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1funesgvchxj20h40bpq3t.jpg" alt=""></p>
+<ul>
+<li><p>聚集类：Aggregate(抽象类)和ConcreteAggregate(具体聚集类)表示聚集类，是用来存储迭代器的数据。在Aggregate(抽象类)中有一个CreateIterator方法，用来获取迭代器</p>
+</li>
+<li><p>迭代器：迭代器用来为聚集类提供服务，提供了一系列访问聚集类对象元素的方法。</p>
+</li>
+</ul>
+<h4 id="JavaScript中的迭代器"><a href="#JavaScript中的迭代器" class="headerlink" title="JavaScript中的迭代器"></a>JavaScript中的迭代器</h4><pre><code>JavaScript中的迭代器可以分为两种，一种是**内部迭代器**，另一种是**外部迭代器**，单从字面上我们并不能区分出这两种迭代器有什么区别，下面我们从定义以及实现来让大家直观的看出这两种迭代器的区别以及其各自用途。
+</code></pre><h5 id="内部迭代器"><a href="#内部迭代器" class="headerlink" title="内部迭代器"></a>内部迭代器</h5><pre><code>内部迭代器在调用的时候非常方便，外界不用关心迭代器内部的实现，跟迭代器的交互也仅仅是一次初始调用，下面我们来实现一个内部迭代器：
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// 定义内部迭代器</span><br><span class="line">let forEach = (arry, callback) =&gt; &#123;</span><br><span class="line">  // 迭代规则</span><br><span class="line">  for(let i = 0; i&lt; arry.length; i++) &#123;</span><br><span class="line">    callback(arry[i], i)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">// 执行迭代器</span><br><span class="line">forEach([a, b, c, d], (item, index) =&gt; &#123;</span><br><span class="line">  console.log(item) // 输出：a b c d</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<pre><code>如上代码所示，内部迭代器的迭代规则是提前设定好的，因此对于调用该迭代器的对象来说局限性也是很大的，这也正是内部迭代器的缺点。
+</code></pre><h5 id="外部迭代器"><a href="#外部迭代器" class="headerlink" title="外部迭代器"></a>外部迭代器</h5><pre><code>外部迭代器增加了一些调用的复杂度，但相对也增强了迭代器的灵活性，我们可以手工控制迭代的过程或者顺序。外部迭代器的示例代码如下：
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// 定义外部迭代器类</span><br><span class="line">class Iterator &#123;</span><br><span class="line">    // 构造函数</span><br><span class="line">    constructor(arry) &#123;</span><br><span class="line">        this.currentIndex = 0;</span><br><span class="line">        this.arry = arry</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 当前数组下标后移一位，若还有下一位，则返回true 若没有下一位，则范围false</span><br><span class="line">    next() &#123;</span><br><span class="line">        if (this.currentIndex &lt; (this.arry.length - 1)) &#123;</span><br><span class="line">            this.currentIndex++</span><br><span class="line">            return true</span><br><span class="line">        &#125;</span><br><span class="line">        return false</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 获取当前下标的对象</span><br><span class="line">    getCurrentItem() &#123;</span><br><span class="line">        return this.arry[this.currentIndex]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">let iterator = new Iterator([1, 2, 3, 4, 5])</span><br><span class="line">while(iterator.next()) &#123;</span><br><span class="line">    console.log(iterator.getCurrentItem()) // 最终输出1 2 3 4 5</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>外部迭代器虽然调用方式相对复杂，但它的适用面更广，也能满足更多变的需求。</p>
+<h5 id="终止迭代器"><a href="#终止迭代器" class="headerlink" title="终止迭代器"></a>终止迭代器</h5><p>终止迭代器就是提供一种可以跳出循环的方法，类似于for循环中的break，示例代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// 定义终止迭代器</span><br><span class="line">let forEach = (arry, callback) =&gt; &#123;</span><br><span class="line">  // 迭代规则</span><br><span class="line">  for(let i = 0; i&lt; arry.length; i++) &#123;</span><br><span class="line">    if (!callback(arry[i], i)) break;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">// 执行迭代器</span><br><span class="line">forEach([2, 4, 6, 7, 8], (item, index) =&gt; &#123;</span><br><span class="line">	console.log(item) // 输出：2 4 6 7</span><br><span class="line">	return item%2 !== 0 // 当item不为偶数时终止</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><pre><code>迭代器模式是一种比较简单的设计模式，但是实际开发中使用频率也是非常高的，学会此模式有助于我们对迭代的更深层次的理解。
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/26/JavaScript设计模式之迭代器模式/" data-id="cjnbvav5e000fz0fy3q9iyc2i" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之代理模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/19/JavaScript设计模式之代理模式/" class="article-date">
+  <time datetime="2018-08-19T15:58:47.000Z" itemprop="datePublished">2018-08-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/19/JavaScript设计模式之代理模式/">JavaScript设计模式之代理模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>又到了一周设计模式学习及分享的时间了，本周我要给大家分享的是设计模式中大名鼎鼎的<strong>代理模式</strong>。代理模式可能大家都听过，并且代理模式在我们日常生活中的例子也有很多，比如明星和经纪人…<br>​    </p>
+<pre><code>代理模式的关键是，当客户不方便直接访问一个对象或者不满足需要的时候，提供一个替身对象来控制对这个对象的访问，客户实际上访问的是替身对象。替身对象对请求做出一些处理之后，再把请求转交给本体对象。
+</code></pre><h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>代理模式是为一个对象提供一个代用品或占位符，以便控制对它的访问。其UML图如下图所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1fuf1h9dymmj20fk07bgm9.jpg" alt=""></p>
+<pre><code>RealImage真实图片类和ProxyImage代理图片类实现了Image接口和该接口中的display()方法，ProxyImage对象中保留了RealImage对象的引用，并在display()方法中封装了对RealImage对象display()方法的调用，当ProxyPatternDemo类中的main方法调用ProxyImage类的display()方法时，也就是相当于间接的调用了RealImage类的display()方法，这就是我所理解代理模式。
+</code></pre><h4 id="职责划分"><a href="#职责划分" class="headerlink" title="职责划分"></a>职责划分</h4><p>根据职责来进行划分，代理模式又分为以下8种：</p>
+<p>1、远程代理 </p>
+<p>2、虚拟代理</p>
+<p>3、写时复制Copy-on-Write 代理</p>
+<p>4、保护（Protect or Access）代理</p>
+<p>5、Cache代理</p>
+<p>6、防火墙（Firewall）代理</p>
+<p>7、同步化（Synchronization）代理</p>
+<p>8、智能引用（Smart Reference）代理</p>
+<p>JavaScript开发中最常用的是<strong>虚拟代理</strong>和<strong>缓存代理</strong>。</p>
+<ul>
+<li><strong>虚拟代理</strong>，</li>
+<li><strong>缓存代理</strong>，</li>
+</ul>
+<h4 id="虚拟代理"><a href="#虚拟代理" class="headerlink" title="虚拟代理"></a>虚拟代理</h4><pre><code>根据需要创建开销很大的对象，通过它来存放实例化需要很长时间的真实对象，比如浏览器的渲染的时候先显示问题，而图片可以慢慢显示（就是通过虚拟代理代替了真实的图片，此时虚拟代理保存了真实图片的路径和尺寸。用虚拟代理实现图片预加载代码实例：
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">// 图片加载函数</span><br><span class="line">  var myImage = (function()&#123;</span><br><span class="line">      var imgNode = document.createElement(&quot;img&quot;);</span><br><span class="line">      document.body.appendChild(imgNode);</span><br><span class="line">  </span><br><span class="line">      return &#123;</span><br><span class="line">          setSrc: function(src) &#123;</span><br><span class="line">              imgNode.src = src;</span><br><span class="line">          &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;)();</span><br><span class="line"> </span><br><span class="line"> // 引入代理对象</span><br><span class="line"> var proxyImage = (function()&#123;</span><br><span class="line">     var img = new Image;</span><br><span class="line">     img.onload = function()&#123;</span><br><span class="line">         // 图片加载完成，正式加载图片</span><br><span class="line">         myImage.setSrc( this.src );</span><br><span class="line">     &#125;;</span><br><span class="line">     return &#123;</span><br><span class="line">         setSrc: function(src)&#123;</span><br><span class="line">             // 图片未被载入时，加载一张提示图片</span><br><span class="line">             myImage.setSrc(&quot;file://c:/loading.png&quot;);</span><br><span class="line">             img.src = src;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;)();</span><br><span class="line"> </span><br><span class="line"> // 调用代理对象加载图片</span><br><span class="line"> proxyImage.setSrc( &quot;http://images/qq.jpg&quot;);</span><br></pre></td></tr></table></figure>
+<pre><code>proxyImage 间接地访问MyImage。proxyImage 控制了客户对MyImage 的访问，并且在此过程中加入一些额外的操作（真正的图片加载好之前，先把img 节点的src 设置为一张本地的loading 图片）。看完这段代码之后我们会立马思考一个问题，不使用代理模式我们照样可以实现图片的预加载功能，无非就是在MyImage的setSrc方法中加上图片加载完成监听以及加载本地提示图片这两部分代码，为什么要使用代理模式反而把实现变得复杂了？
+
+思考两个问题：
+
+一、对于MyImage的setSrc函数来说职责过多，既要给img设置src，又要负责预加载图片，违反了面向对象设计原则中的**单一职责原则**；
+
+二、如果后期我们考虑撤销图片预加载功能，就要去修改MyImage的setSrc方法，违反了**开闭原则**；
+</code></pre><p>分析了上面两个问题后，代理模式恰好能规避掉这两个问题，此时就体现出了设计模式的优点。</p>
+<h4 id="缓存代理"><a href="#缓存代理" class="headerlink" title="缓存代理"></a>缓存代理</h4><pre><code>缓存代理可以为一些开销大的运算结果提供暂时的存储，在下次运算时，如果传递进来的参数跟之前一致，则可以直接返回前面存储的运算结果。使用缓存代理实现运算结果缓存代码如下：
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">var add = function()&#123;</span><br><span class="line">    var sum = 0;</span><br><span class="line">    for(var i = 0, l = arguments.length; i &lt; l; i++)&#123;</span><br><span class="line">        sum += arguments[i];</span><br><span class="line">    &#125;</span><br><span class="line">    return sum;</span><br><span class="line">&#125;;</span><br><span class="line">var proxyAdd = (function()&#123;</span><br><span class="line">    var cache = &#123;&#125;; //缓存运算结果的缓存对象</span><br><span class="line">    return function()&#123;</span><br><span class="line">        var args = Array.prototype.join.call(arguments);//把参数用逗号组成一个字符串作为“键”</span><br><span class="line">        if(cache.hasOwnProperty(args))&#123;//等价 args in cache</span><br><span class="line">            console.log(&apos;使用缓存结果&apos;);</span><br><span class="line">            return cache[args];//直接使用缓存对象的“值”</span><br><span class="line">        &#125;</span><br><span class="line">        console.log(&apos;计算结果&apos;);</span><br><span class="line">        return cache[args] = add.apply(this,arguments);//使用本体函数计算结果并加入缓存</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)();</span><br><span class="line">console.log(proxyAdd(1,2,3,4,5));</span><br><span class="line">console.log(proxyAdd(1,2,3,4,5));</span><br><span class="line">console.log(proxyAdd(1,2,3,4,5));</span><br><span class="line"></span><br><span class="line">// 输出结果</span><br><span class="line">计算结果</span><br><span class="line">15</span><br><span class="line">使用缓存结果</span><br><span class="line">15</span><br><span class="line">使用缓存结果</span><br><span class="line">15</span><br></pre></td></tr></table></figure>
+<pre><code>通过增加缓存代理的方式，add 函数可以继续专注于自身的职责——计算传入参数的和，缓存的功能是由代理对象实现的。
+</code></pre><h4 id="ES6中的代理Proxy"><a href="#ES6中的代理Proxy" class="headerlink" title="ES6中的代理Proxy"></a>ES6中的代理Proxy</h4><pre><code>ES6原生提供了Proxy构造函数，主要作用是在目标对象之前架设一层**拦截**，外界对该对象的访问，都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。其主要的思想还是设计模式，下面我们就来学习一下如何使用Proxy。
+
+Proxy是一个构造函数，它可以接受两个参数：目标对象（target） 与句柄对象（handler） ，返回一个代理对象Proxy，主要用于从外部控制对对象内部的访问。
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">const target = &#123;&#125;, handler = &#123;&#125;</span><br><span class="line">const proxy = new Proxy(target, handler)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><strong>Proxy、target、handler这三者之间有什么关系呢？</strong></p>
+<p>Proxy的行为很简单：将Proxy的所有内部方法转发至target 。即调用Proxy的方法就会调用target上对应的方法。</p>
+</li>
+<li><p><strong>handler是用来干嘛的？</strong></p>
+<p>handler的方法可以覆写任意代理的内部方法。 外界每次通过Proxy访问<code>target</code> 对象的属性时，就会经过 <code>handler</code> 对象，因此，我们可以通过重写handler对象中的一些方法来做一些拦截的操作。 </p>
+</li>
+</ul>
+<h5 id="举个栗子"><a href="#举个栗子" class="headerlink" title="举个栗子"></a>举个栗子</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">let user = &#123;</span><br><span class="line">	username: &apos;zhangsan&apos;,</span><br><span class="line">	password: &apos;123456&apos;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">var userProxy = new Proxy(user,&#123;</span><br><span class="line">	get: function(target, property, receiver)&#123;</span><br><span class="line">		console.log(`你访问了user的$&#123;property&#125;属性`)</span><br><span class="line">		return target[prop]</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br><span class="line">console.log(userProxy.username)</span><br><span class="line">// 你访问了user的username属性 </span><br><span class="line">// zhangsan</span><br></pre></td></tr></table></figure>
+<pre><code>如上面的代码，我们访问并输出了username属性，但是运行结果确又额外的输出了我们在`handler`的get方法中预先输出的一句话，这就是拦截器的作用。
+</code></pre><h5 id="handler的内建方法"><a href="#handler的内建方法" class="headerlink" title="handler的内建方法"></a>handler的内建方法</h5><pre><code>相信看了上面代码大家还有一个疑问，get方法是什么？get方法是handler对象的14个内建方法之一，我们可以通过重写这些内建方法来自定义拦截器的内容。handler对象拥有以下14个内建对象（我只举四个常用的，其他的请参考博客[深度揭秘ES6代理Proxy](https://blog.csdn.net/qq_28506819/article/details/71077788)）：
+</code></pre><ol>
+<li><code>handler.get(target, property, receiver)</code> 方法用于拦截对象的读取属性操作<ul>
+<li>target，目标对象</li>
+<li>property，被获取的属性名</li>
+<li>receiver，Proxy或者继承Proxy的对象</li>
+</ul>
+</li>
+<li><code>handler.set(target, property, value, receiver)</code> 方法用于拦截设置属性值的操作 <ul>
+<li>target，目标对象</li>
+<li>property，被设置的属性名</li>
+<li>value，被设置的新值</li>
+<li>receiver，最初被调用的对象。通常是proxy本身，但handler的set方法也有可能在原型链上或以其他方式被间接地调用（因此不一定是proxy本身）</li>
+</ul>
+</li>
+<li><code>handler.apply(target, thisArg, argumentsList)</code> 方法用于拦截函数的调用 <ul>
+<li>target，目标对象（函数）</li>
+<li>thisArg，被调用时的上下文对象</li>
+<li>argumentsList，被调用时的参数列表</li>
+</ul>
+</li>
+<li><code>handler.construct(target, argumentsList, newTarget)</code>用于来接new操作 <ul>
+<li>target，目标对象</li>
+<li>argumensList，构造器参数列表</li>
+<li>newTarget，最初调用的构造函数</li>
+</ul>
+</li>
+</ol>
+<p><strong>下面我们就来用ES6语法对虚拟代理例子进行重写</strong></p>
+<ul>
+<li>虚拟代理</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">class MyImage &#123;</span><br><span class="line">    constructor(document) &#123;</span><br><span class="line">        this.imgNode = document.createElement(&apos;img&apos;)</span><br><span class="line">      	document.body.appendChild(imgNode)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    setSrc(src) &#123;</span><br><span class="line">        imgNode.src = src</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">let myImg = new MyImage(document)</span><br><span class="line"></span><br><span class="line">let myImageProxy = new Proxy(myImg.setSrc, &#123;</span><br><span class="line">    apply(target, ctx, arguments) &#123;</span><br><span class="line">        var img = new Image</span><br><span class="line">        img.onload = function()&#123;</span><br><span class="line">            // 图片加载完成，正式加载图片</span><br><span class="line">            Reflect.apply(target, ctx, arguments)</span><br><span class="line">        &#125;</span><br><span class="line">        // 图片未被载入时，加载一张提示图片</span><br><span class="line">        Reflect.apply(target, ctx, [&apos;file://c:/loading.png&apos;])</span><br><span class="line">        img.src = arguments[0]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">// 调用</span><br><span class="line">myImageProxy(&apos;http://images/qq.jpg&apos;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>缓存代理</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">class Add &#123;</span><br><span class="line">    constructor() &#123;</span><br><span class="line">        var sum = 0;</span><br><span class="line">        for(var i = 0, l = arguments.length; i &lt; l; i++)&#123;</span><br><span class="line">            sum += arguments[i]</span><br><span class="line">        &#125;</span><br><span class="line">        return &#123;value: sum&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">let AddProxy = new Proxy(Add, &#123;</span><br><span class="line">    construct(target, arguments, newTarget) &#123; // newTarget最初的构造函数</span><br><span class="line">    	let cache = target.cache // 从Add类中取出静态属性cache(缓存运算结果的缓存对象)</span><br><span class="line">        var args = Array.prototype.join.call(arguments);//把参数用逗号组成一个字符串作为“键”</span><br><span class="line">        if(cache.hasOwnProperty(args))&#123;//等价 args in cache</span><br><span class="line">            console.log(&apos;使用缓存结果&apos;);</span><br><span class="line">            return cache[args];//直接使用缓存对象的“值”</span><br><span class="line">        &#125;</span><br><span class="line">        console.log(&apos;计算结果&apos;);</span><br><span class="line">        return cache[args] = Reflect.construct(target, arguments);//使用本体函数计算结果并加入缓存</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h4><p>学习了代理模式之后，我的第一个想法就是赶快将我之前写的带有缓存的请求函数进行一个彻底的改造。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/19/JavaScript设计模式之代理模式/" data-id="cjnbvav4y0000z0fy0w2py7af" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-JavaScript设计模式之策略模式" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/12/JavaScript设计模式之策略模式/" class="article-date">
@@ -87,7 +606,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="JavaScript设计模式之策略模式"><a href="#JavaScript设计模式之策略模式" class="headerlink" title="JavaScript设计模式之策略模式"></a>JavaScript设计模式之策略模式</h3><p>​    策略模式对于我来说是一种比较陌生的设计模式，单从字面的意思我感觉这种设计模式应该是提供一些策略（解决方案或者方法）。哈哈，可能我理解的有些偏差，那么下面我们就来探究下什么是策略模式，以及在JavaScript中策略模式是什么样子的，优缺点等。</p>
+        <p>​    策略模式对于我来说是一种比较陌生的设计模式，单从字面的意思我感觉这种设计模式应该是提供一些策略（解决方案或者方法）。哈哈，可能我理解的有些偏差，那么下面我们就来探究下什么是策略模式，以及在JavaScript中策略模式是什么样子的，优缺点等。</p>
 <h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>定义一系列的算法，把它们封装起来，并且使它们可以相互替换。其UML图如下图所示：</p>
 <p><img src="http://ww1.sinaimg.cn/mw690/d8f33188ly1fu7a3v3dzij20jh06240m.jpg" alt=""></p>
 <p>由上面的UML图我们看出，策略模式中有两个重要的部分：</p>
@@ -123,7 +642,162 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/12/JavaScript设计模式之策略模式/" data-id="cjn8y5rq80000oqfy3kzod3zy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/12/JavaScript设计模式之策略模式/" data-id="cjnbvav5f000iz0fyb7adftap" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之单例模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/JavaScript设计模式之单例模式/" class="article-date">
+  <time datetime="2018-08-06T04:12:55.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/06/JavaScript设计模式之单例模式/">JavaScript设计模式之单例模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>单例模式算是设计模式中我们最常接触的一种设计模式。在实际开发中，系统中有些对象我们只需要一个，例如线程池，数据库操作对象，全局缓存等，这时候我就要用到单例模式。</p>
+<h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>单例模式的定义就是，保证一个类仅有一个实例，并提供一个访问它的全局访问点。其UML图如下所示：</p>
+<p><img src="http://ww1.sinaimg.cn/large/d8f33188ly1ftz68f0yl3j20e307zaas.jpg" alt=""></p>
+<p>​    单例模式包含的角色只有一个，就是单例类——Singleton。单例类拥有一个私有构造函数，确保用户无法通过new关键字直接实例化它。除此之外，该模式中包含一个静态私有成员变量与静态公有的工厂方法，该工厂方法负责检验实例的存在性并实例化自己，然后存储在静态成员变量中，以确保只有一个实例被创建。</p>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p><strong>ES5写法</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">var Singleton = function(name) &#123;</span><br><span class="line">    this.name = name</span><br><span class="line">    //一个标记，用来判断是否已将创建了该类的实例</span><br><span class="line">    this.instance = null</span><br><span class="line">&#125;</span><br><span class="line">// 提供了一个静态方法，用户可以直接在类上调用</span><br><span class="line">Singleton.getInstance = function(name) &#123;</span><br><span class="line">    // 没有实例化的时候创建一个该类的实例</span><br><span class="line">    if(!this.instance) &#123;</span><br><span class="line">        this.instance = new Singleton(name)</span><br><span class="line">    &#125;</span><br><span class="line">    // 已经实例化了，返回第一次实例化对象的引用</span><br><span class="line">    return this.instance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">var a = Singleton.getInstance(&apos;sven1&apos;)</span><br><span class="line">var b = Singleton.getInstance(&apos;sven2&apos;)</span><br><span class="line"></span><br><span class="line">console.log(a === b) // 输出true</span><br><span class="line">console.log(a) // 输出Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br><span class="line">console.log(b) // 输出Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>ES6写法</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">class Singleton &#123;</span><br><span class="line">    constructor(name) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">        this.instance = null</span><br><span class="line">    &#125;</span><br><span class="line">    // 构造一个广为人知的接口，供用户对该类进行实例化</span><br><span class="line">    static getInstance(name) &#123;</span><br><span class="line">        if(!this.instance) &#123;</span><br><span class="line">            this.instance = new Singleton(name)</span><br><span class="line">        &#125;</span><br><span class="line">        return this.instance</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">var a = Singleton.getInstance(&apos;sven1&apos;)</span><br><span class="line">var b = Singleton.getInstance(&apos;sven2&apos;)</span><br><span class="line"></span><br><span class="line">console.log(a === b) // 输出true</span><br><span class="line">console.log(a) // 输出Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br><span class="line">console.log(b) // 输出Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br></pre></td></tr></table></figure>
+<p>​    我们在调用两次静态公有方法<code>getInstance</code>之后返回的对象都是同一个，因此达到了我们的目的（保证一个类仅有一个实例）。</p>
+<p>​    相信大家看完这段代码之后和我一样都有一个疑问，那就是在输出a对象和b对象的时候name属性为sven1这在预料之内，但instance为null，就有些出乎意料了。明明在<code>getInstance</code>静态方法中都已经将<code>new Singleton(name)</code>赋值给了<code>this.instance</code>，为什么输出的时候还是null呢？这时候我们不妨将构造函数中的this与静态方法<code>getInstance</code>中的this进行输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// constructor中输出</span><br><span class="line">Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br><span class="line"></span><br><span class="line">// getInstance中输出</span><br><span class="line">function(name) &#123;</span><br><span class="line">    this.name = name;</span><br><span class="line">    //一个标记，用来判断是否已将创建了该类的实例</span><br><span class="line">    this.instance = null;</span><br><span class="line">    console.log(`constructor:$&#123;Singleton&#125;`)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>​      原来两个地方的this并不一样，构造函数中的this指向当前类的对象，而静态方法<code>getInstance</code>中的this则指向该静态方法。</p>
+<h4 id="漏洞"><a href="#漏洞" class="headerlink" title="漏洞"></a>漏洞</h4><p>​    虽然我们通过该类的静态工厂方法获取到的对象都是同一个对象，但是还记得我们一开始就介绍的单例类的必要条件之一就是私有的构造函数，为什么要有这样一个条件呢？试想一下，当用户拿到一个类之后的第一反应就是new，那么我们所设计的静态工厂方法<code>getInstance</code>此时并没有起到任何作用，下面我们来验证一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">var a = Singleton.getInstance(&apos;sven1&apos;)</span><br><span class="line">var b = Singleton.getInstance(&apos;sven2&apos;)</span><br><span class="line">var c = new Singleton(&apos;sven3&apos;)</span><br><span class="line"></span><br><span class="line">console.log(a === b) // 输出true</span><br><span class="line">console.log(a) // 输出Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br><span class="line">console.log(b) // 输出Singleton &#123;name: &quot;sven1&quot;, instance: null&#125;</span><br><span class="line">console.log(a === c) // 输出false</span><br><span class="line">console.log(c) // 输出Singleton  &#123;name: &quot;sven3&quot;, instance: null&#125;</span><br></pre></td></tr></table></figure>
+<p>​       通过new出来的对象c与通过静态工厂方法<code>getInstance</code>得到的对象（a, b）并不是同一个对象，因此这种单例模式是不是“单“的不够彻底呢。</p>
+<h4 id="完善"><a href="#完善" class="headerlink" title="完善"></a>完善</h4><p>​    在JavaScript中我暂时还没有查到如何将构造方法变为私有的，因此我们需要对构造函数做个手脚来堵住这个”漏洞“。</p>
+<blockquote>
+<p>constructor 方法是类的默认方法，通过 new 命令生成对象实例时会自动调用这个方法，类必须有 constructor 方法，如果一个类没有显式定义构造函数，那么一个空的 constructor 方法会自动添加到类中</p>
+</blockquote>
+<p><strong>ES5写法</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">var Singleton = function(name) &#123;</span><br><span class="line">	if (!Singleton.instance) &#123;</span><br><span class="line">        this.name = name</span><br><span class="line">        //一个标记，用来判断是否已将创建了该类的实例</span><br><span class="line">        Singleton.instance = this</span><br><span class="line">	&#125;</span><br><span class="line">	return Singleton.instance</span><br><span class="line">&#125;</span><br><span class="line">// 提供了一个静态方法，用户可以直接在类上调用</span><br><span class="line">Singleton.getInstance = function(name) &#123;</span><br><span class="line">    // 没有实例化的时候创建一个该类的实例</span><br><span class="line">    if(!this.instance) &#123;</span><br><span class="line">        this.instance = new Singleton(name)</span><br><span class="line">    &#125;</span><br><span class="line">    // 已经实例化了，返回第一次实例化对象的引用</span><br><span class="line">    return this.instance</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">var a = Singleton.getInstance(&apos;sven1&apos;)</span><br><span class="line">var b = Singleton.getInstance(&apos;sven2&apos;)</span><br><span class="line">var c = new Singleton(&apos;sven3&apos;)</span><br><span class="line"></span><br><span class="line">console.log(a === b) // 输出true</span><br><span class="line">console.log(a) // 输出Singleton &#123;name: &quot;sven1&quot;&#125;</span><br><span class="line">console.log(b) // 输出Singleton &#123;name: &quot;sven1&quot;&#125;</span><br><span class="line">console.log(a === c) // 输出true</span><br><span class="line">console.log(c) // 输出Singleton  &#123;name: &quot;sven1&quot;&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>ES6写法</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">class Singleton &#123;</span><br><span class="line">    constructor(name) &#123;</span><br><span class="line">        if (!Singleton.instance) &#123;</span><br><span class="line">            this.name = name</span><br><span class="line">            //一个标记，用来判断是否已将创建了该类的实例</span><br><span class="line">            Singleton.instance = this</span><br><span class="line">		&#125;</span><br><span class="line">		return Singleton.instance</span><br><span class="line">    &#125;</span><br><span class="line">    // 构造一个广为人知的接口，供用户对该类进行实例化</span><br><span class="line">    static getInstance(name) &#123;</span><br><span class="line">        if(!this.instance) &#123;</span><br><span class="line">            this.instance = new Singleton(name)</span><br><span class="line">        &#125;</span><br><span class="line">        return this.instance</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">var a = Singleton.getInstance(&apos;sven1&apos;)</span><br><span class="line">var b = Singleton.getInstance(&apos;sven2&apos;)</span><br><span class="line">var c = new Singleton(&apos;sven3&apos;)</span><br><span class="line"></span><br><span class="line">console.log(a === b) // 输出true</span><br><span class="line">console.log(a) // 输出Singleton &#123;name: &quot;sven1&quot;&#125;</span><br><span class="line">console.log(b) // 输出Singleton &#123;name: &quot;sven1&quot;&#125;</span><br><span class="line">console.log(a === c) // 输出true</span><br><span class="line">console.log(c) // 输出Singleton  &#123;name: &quot;sven1&quot;&#125;</span><br></pre></td></tr></table></figure>
+<p>通过在构造函数中增加一个类似的判断之后，这个”漏洞“就被堵上了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/JavaScript设计模式之单例模式/" data-id="cjnbvav550003z0fyb9jdyzwi" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-JavaScript设计模式之装饰者模式（ReactNatiive表单验证）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/06/JavaScript设计模式之装饰者模式（ReactNatiive表单验证）/" class="article-date">
+  <time datetime="2018-08-06T04:01:24.000Z" itemprop="datePublished">2018-08-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/06/JavaScript设计模式之装饰者模式（ReactNatiive表单验证）/">JavaScript设计模式之装饰者模式(ReactNative表单验证)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p> 在任何系统的开发工作中，表单的验证都是一项必不可少的工作，在ReactNative的开发过程中也不过如此。</p>
+</blockquote>
+<h3 id="现状"><a href="#现状" class="headerlink" title="现状"></a>现状</h3><p>​         由于ReactNative原生并没有提供表单验证功能，因此只能求助于第三方的一些插件，目前比较常用的ReactNative表单验证插件有以下几种：</p>
+<ol>
+<li><p><a href="https://github.com/FaridSafi/react-native-gifted-form#readme" target="_blank" rel="noopener"><strong>react-native-gifted-form</strong></a></p>
+<p>react-native-gifted-form是一款非常棒的ReactNative表单验证插件，页面效果非常酷炫，上手也不是很难；但是该项目作者已经很长时间没有维护，并且表单控件只能使用该插件提供的一些控件。</p>
+</li>
+<li><p><a href="https://github.com/gcanti/tcomb-form-native" target="_blank" rel="noopener"><strong>tcomb-form-native</strong></a></p>
+<p>tcomb-form-native是一款非常容易上手的ReactNative表单验证插件，star也达到了将近3k；同样它的缺点也是表单控件只能使用该插件提供的一些控件，并且表单控件的效果与我们的需求差异很大。</p>
+</li>
+<li><p><a href="https://github.com/react-component/form" target="_blank" rel="noopener"><strong>rc-form</strong></a></p>
+<p>rc-form是antd所推荐的一款表单验证插件，它支持ReactNative，可以使用自己封装的表单控件；但是看完官方给出的demo之后，完全懵逼，瞬间感觉遇到了一块硬骨头。</p>
+</li>
+</ol>
+<h3 id="取舍"><a href="#取舍" class="headerlink" title="取舍"></a>取舍</h3><p>​        以上三种表单验证插件都是非常棒的，各有优缺点，关于要使用哪一种完全取决于自己的业务需求，由于目前的业务需求，我选择了<strong>rc-form</strong>。</p>
+<h3 id="rc-from-for-ReactNative"><a href="#rc-from-for-ReactNative" class="headerlink" title="rc-from for ReactNative"></a>rc-from for ReactNative</h3><p>先来看下官方给出的<a href="https://github.com/react-component/form/blob/master/examples/react-native/App.js" target="_blank" rel="noopener">demo</a>，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line">import React from &apos;react&apos;</span><br><span class="line">import PropTypes from &apos;prop-types&apos;</span><br><span class="line">import &#123;</span><br><span class="line">  StyleSheet,</span><br><span class="line">  Button,</span><br><span class="line">  Dimensions,</span><br><span class="line">  TextInput,</span><br><span class="line">  Text,</span><br><span class="line">  View,</span><br><span class="line">  Alert,</span><br><span class="line">&#125; from &apos;react-native&apos;</span><br><span class="line"></span><br><span class="line">import &#123; createForm &#125; from &apos;rc-form&apos;</span><br><span class="line"></span><br><span class="line">const &#123; width &#125; = Dimensions.get(&apos;window&apos;)</span><br><span class="line">const styles = StyleSheet.create(&#123;</span><br><span class="line">  container: &#123;</span><br><span class="line">    flex: 1,</span><br><span class="line">    backgroundColor: &apos;#fff&apos;,</span><br><span class="line">    alignItems: &apos;center&apos;,</span><br><span class="line">    padding: 50,</span><br><span class="line">    justifyContent: &apos;center&apos;,</span><br><span class="line">  &#125;,</span><br><span class="line">  inputView: &#123;</span><br><span class="line">    width: width - 100,</span><br><span class="line">    paddingLeft: 10,</span><br><span class="line">  &#125;,</span><br><span class="line">  input: &#123;</span><br><span class="line">    height: 42,</span><br><span class="line">    fontSize: 16,</span><br><span class="line">  &#125;,</span><br><span class="line">  errorinfo: &#123;</span><br><span class="line">    marginTop: 10,</span><br><span class="line">  &#125;,</span><br><span class="line">  errorinfoText: &#123;</span><br><span class="line">    color: &apos;red&apos;,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">class FromItem extends React.PureComponent &#123;</span><br><span class="line">  getError = error =&gt; &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">      return error.map(info =&gt; &#123;</span><br><span class="line">        return (</span><br><span class="line">          &lt;Text style=&#123;styles.errorinfoText&#125; key=&#123;info&#125;&gt;</span><br><span class="line">            &#123;info&#125;</span><br><span class="line">          &lt;/Text&gt;</span><br><span class="line">        )</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  render() &#123;</span><br><span class="line">    const &#123; label, onChange, value, error &#125; = this.props</span><br><span class="line">    return (</span><br><span class="line">      &lt;View style=&#123;styles.inputView&#125;&gt;</span><br><span class="line">        &lt;TextInput</span><br><span class="line">          style=&#123;styles.input&#125;</span><br><span class="line">          value=&#123;value || &apos;&apos;&#125;</span><br><span class="line">          label=&#123;`$&#123;label&#125;：`&#125;</span><br><span class="line">          duration=&#123;150&#125;</span><br><span class="line">          onChangeText=&#123;onChange&#125;</span><br><span class="line">          highlightColor=&quot;#40a9ff&quot;</span><br><span class="line">          underlineColorAndroid=&quot;#40a9ff&quot;</span><br><span class="line">        /&gt;</span><br><span class="line">        &lt;View style=&#123;styles.errorinfo&#125;&gt;&#123;this.getError(error)&#125;&lt;/View&gt;</span><br><span class="line">      &lt;/View&gt;</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class App extends React.Component &#123;</span><br><span class="line">  static propTypes = &#123;</span><br><span class="line">    form: PropTypes.object.isRequired,</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  checkUserNameOne = (value, callback) =&gt; &#123;</span><br><span class="line">    setTimeout(() =&gt; &#123;</span><br><span class="line">      if (value === &apos;15188888888&apos;) &#123;</span><br><span class="line">        callback(&apos;手机号已经被注册&apos;)</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">        callback()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;, 2000)</span><br><span class="line">  &#125;</span><br><span class="line">  submit = () =&gt; &#123;</span><br><span class="line">    this.props.form.validateFields((error) =&gt; &#123;</span><br><span class="line">      if (error) return</span><br><span class="line">      Alert(&apos;通过了所有验证&apos;) // eslint-disable-line new-cap</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  render() &#123;</span><br><span class="line">    const &#123; getFieldDecorator, getFieldError &#125; = this.props.form</span><br><span class="line">    return (</span><br><span class="line">      &lt;View style=&#123;styles.container&#125;&gt;</span><br><span class="line">        &lt;Text&gt;简单的手机号验证&lt;/Text&gt;</span><br><span class="line">        &#123;getFieldDecorator(&apos;username&apos;, &#123;</span><br><span class="line">          validateFirst: true,</span><br><span class="line">          rules: [</span><br><span class="line">            &#123; required: true, message: &apos;请输入手机号!&apos; &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">              pattern: /^1\d&#123;10&#125;$/,</span><br><span class="line">              message: &apos;请输入正确的手机号!&apos;,</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">              validator: (rule, value, callback) =&gt; &#123;</span><br><span class="line">                this.checkUserNameOne(value, callback);</span><br><span class="line">              &#125;,</span><br><span class="line">              message: &apos;手机号已经被注册!&apos;,</span><br><span class="line">            &#125;,</span><br><span class="line">          ],</span><br><span class="line">        &#125;)(</span><br><span class="line">          &lt;FromItem</span><br><span class="line">            autoFocus</span><br><span class="line">            placeholder=&quot;手机号&quot;</span><br><span class="line">            error=&#123;getFieldError(&apos;username&apos;)&#125;</span><br><span class="line">          /&gt;</span><br><span class="line">        )&#125;</span><br><span class="line">        &lt;Button color=&quot;#40a9ff&quot; onPress=&#123;this.submit&#125; title=&quot;登陆&quot; /&gt;</span><br><span class="line">      &lt;/View&gt;</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">export default createForm()(App)</span><br></pre></td></tr></table></figure>
+<p>​        看完这段代码，相信大部分人跟我的感觉是一样的（不就是一个表单验证吗，怎么使用起来这么复杂，让我瞬间怀念起使用Vue的那段日子）。之前做过Vue相关的开发，elementUI和iView中的表单组件使用起来是多么的简洁易懂，怎么到了ReactNative中就变的这么的复杂难懂。先不吐槽了~，来梳理一下这个demo中的思路吧，毕竟思路清晰以后我们还是可以将其再次封装的（毕竟再好用的插件也都是人家进行多次封装之后供我们使用的，这也是一次技术提升的好机会）。</p>
+<p>​    我先来讲一下大致的思路，在代码的最后一句，导出了<code>createForm()(App)</code>，createForm是一个React高阶函数，它接收一个React组件（App），在函数内部对该组件进行加工改造，最后返回加工改造之后的新组件。在createForm函数中其将form对象传递给App组件，因此通过this.props.form就可以获取到这个form对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">const &#123; getFieldDecorator, getFieldError &#125; = this.props.form</span><br><span class="line">....</span><br><span class="line">&#123;getFieldDecorator(&apos;username&apos;, &#123;</span><br><span class="line">	validateFirst: true,</span><br><span class="line">	rules: [</span><br><span class="line">		&#123; required: true, message: &apos;请输入手机号!&apos; &#125;,</span><br><span class="line">		&#123;</span><br><span class="line">			pattern: /^1\d&#123;10&#125;$/,</span><br><span class="line">			message: &apos;请输入正确的手机号!&apos;,</span><br><span class="line">         &#125;,</span><br><span class="line">		&#123;</span><br><span class="line">        	validator: (rule, value, callback) =&gt; &#123;</span><br><span class="line">		    	this.checkUserNameOne(value, callback);</span><br><span class="line">			&#125;,</span><br><span class="line">			message: &apos;手机号已经被注册!&apos;,</span><br><span class="line">         &#125;,</span><br><span class="line">	],</span><br><span class="line">&#125;)(</span><br><span class="line">	&lt;FromItem</span><br><span class="line">		autoFocus</span><br><span class="line">		placeholder=&quot;手机号&quot;</span><br><span class="line">		error=&#123;getFieldError(&apos;username&apos;)&#125;</span><br><span class="line">	/&gt;</span><br><span class="line">)&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h4 id="getFieldDecorator-函数"><a href="#getFieldDecorator-函数" class="headerlink" title="getFieldDecorator()函数"></a>getFieldDecorator()函数</h4><p>form提供了<code>getFieldDecorator</code>函数。其函数定义形式为 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getFieldDecorator(fieldName, fieldOption) =&gt; (Component) =&gt; ComponentWithExtraProps</span><br></pre></td></tr></table></figure>
+<p>getFieldDecorator函数接收两个参数，分别是</p>
+<ul>
+<li>fieldName：字段名称</li>
+<li>fieldOption：字段操作对象</li>
+</ul>
+<p><strong>源码</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/** </span><br><span class="line"> *  &#123;getFieldDecorator(name,fieldOption)(&lt;FormItem &#123;...props&#125;/&gt;)&#125;将表单项包装为高阶组件后返回</span><br><span class="line"> *  实现功能同getFieldProps方法，内部也调用getFieldProps方法</span><br><span class="line"> *  与getFieldProps方法不同的是，被封装表单项的props作为this.fieldMeta[name]的originalProps属性</span><br><span class="line"> *  originalProps属性的主要目的存储被封装表单项的onChange事件，fieldOption下无同类事件时，执行该事件</span><br><span class="line"> *  不推荐将value、defaultValue作为表单项组件如FormItem的props属性</span><br><span class="line"> */</span><br><span class="line">getFieldDecorator: function getFieldDecorator(name, fieldOption) &#123;</span><br><span class="line">	var _this = this;</span><br><span class="line">	// 获取需要传递给被修饰元素的属性。包括onChange,value等</span><br><span class="line">    // 同时在该props中设定用于收集元素值得监听事件(onChange)，以便后续做双向数据。</span><br><span class="line">	var props = this.getFieldProps(name, fieldOption);</span><br><span class="line">     return function (fieldElem) &#123;</span><br><span class="line">     	  // 此处fieldStore存储字段数据信息以及元数据信息。</span><br><span class="line">          // 数据信息包括value,errors,dirty等</span><br><span class="line">          // 元数据信息包括initValue,defaultValue，校验规则等。</span><br><span class="line">          var fieldMeta = _this.getFieldMeta(name);</span><br><span class="line">          var originalProps = fieldElem.props;</span><br><span class="line">          ...</span><br><span class="line">          fieldMeta.originalProps = originalProps;</span><br><span class="line">          fieldMeta.ref = fieldElem.ref;</span><br><span class="line">          return _react2[&quot;default&quot;].cloneElement(fieldElem, (0, _extends3[&quot;default&quot;])(&#123;&#125;, props, _this.getFieldValuePropValue(fieldMeta)));</span><br><span class="line">      &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>其返回值是一个React高阶函数，接收参数是FormItem自定义组件，在该高阶函数中将onChange以及value传递给FormItem，然后在FormItem组件中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">const &#123; label, onChange, value, error &#125; = this.props</span><br><span class="line">return (</span><br><span class="line">	&lt;View style=&#123;styles.inputView&#125;&gt;</span><br><span class="line">		&lt;TextInput</span><br><span class="line">			style=&#123;styles.input&#125;</span><br><span class="line">			value=&#123;value || &apos;&apos;&#125;</span><br><span class="line">			label=&#123;`$&#123;label&#125;：`&#125;</span><br><span class="line">			duration=&#123;150&#125;</span><br><span class="line">			onChangeText=&#123;onChange&#125;</span><br><span class="line">			highlightColor=&quot;#40a9ff&quot;</span><br><span class="line">			underlineColorAndroid=&quot;#40a9ff&quot;</span><br><span class="line">		/&gt;</span><br><span class="line">		&lt;View style=&#123;styles.errorinfo&#125;&gt;&#123;this.getError(error)&#125;&lt;/View&gt;</span><br><span class="line">	&lt;/View&gt;</span><br><span class="line">)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>获取到onChange以及value后，将其绑定在TextInput组件的onChangeText和value上。（TextInput可以替换为其他的组件，但是替换的组件一定要有value和onChange属性）</p>
+<h4 id="getFieldError-函数"><a href="#getFieldError-函数" class="headerlink" title="getFieldError()函数"></a>getFieldError()函数</h4><p>form同样还提供了<code>getFieldError</code>函数。其函数定义形式为 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getFieldError(fieldName) =&gt; errors数组</span><br></pre></td></tr></table></figure>
+<p>getFieldError函数接收一个参数：</p>
+<ul>
+<li>fieldName：字段名称（要与getFieldDecorator函数的第一个参数fieldName保持一致）</li>
+</ul>
+<p><strong>源码</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 获取this.fields[name][&quot;errors&quot;]错误数据，并剔除没有error.message的错误数据</span><br><span class="line">getFieldError: function getFieldError(name) &#123;</span><br><span class="line">	return (0, _utils.getErrorStrs)(this.getFieldMember(name, &apos;errors&apos;));</span><br><span class="line">&#125;,</span><br><span class="line">// 获取this.fields[name][member]属性数据</span><br><span class="line">getFieldMember: function getFieldMember(name, member) &#123;</span><br><span class="line">	var field = this.getField(name);</span><br><span class="line">	return field &amp;&amp; field[member];</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>其返回值是一个数组，数组中存储的是错误信息，拿到错误信息之后，将其传递给FormItem的error属性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">&lt;FromItem</span><br><span class="line">	...</span><br><span class="line">	error=&#123;getFieldError(&apos;username&apos;)&#125;</span><br><span class="line">/&gt;</span><br><span class="line">...</span><br><span class="line">// 在FromItem.js中</span><br><span class="line">...</span><br><span class="line">const &#123; label, onChange, value, error &#125; = this.props</span><br><span class="line">return (</span><br><span class="line">	&lt;View style=&#123;styles.inputView&#125;&gt;</span><br><span class="line">		...</span><br><span class="line">		&lt;View style=&#123;styles.errorinfo&#125;&gt;&#123;this.getError(error)&#125;&lt;/View&gt;</span><br><span class="line">	&lt;/View&gt;</span><br><span class="line">)</span><br><span class="line">...</span><br><span class="line">// 返回error信息组件函数</span><br><span class="line">getError = error =&gt; &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">      return error.map(info =&gt; &#123;</span><br><span class="line">        return (</span><br><span class="line">          &lt;Text style=&#123;styles.errorinfoText&#125; key=&#123;info&#125;&gt;</span><br><span class="line">            &#123;info&#125;</span><br><span class="line">          &lt;/Text&gt;</span><br><span class="line">        )</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>​    在FromItem组件中，获取到error数组对象之后，调用error信息展示函数，该函数返回错误信息展示组件，从而将错误信息展示给用户。</p>
+<h3 id="表单组件的封装"><a href="#表单组件的封装" class="headerlink" title="表单组件的封装"></a>表单组件的封装</h3><p>​    要想对render函数进行瘦身，我们首先要从自定义表单项组件入手。上一节我们讲到<code>getFieldDecorator</code>函数接收fieldName字段名称和fieldOption字段操作对象两个参数，并返回一个React高阶函数（该高阶函数的参数就是自定义表单组件），在该高阶函数中将onChange以及value传递给自定义表单项组件并返回一个加工后的组件对象。因此，我们可以将<code>getFieldDecorator</code>函数放到自定义表单组件中去，代码如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">// FormItem.js</span><br><span class="line"></span><br><span class="line">import BaseFormItem from &apos;./base-form-item&apos; // 表单项组件基类</span><br><span class="line"></span><br><span class="line">class FromItem extends BaseFormItem &#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    const &#123; label, onChange, value, prop, rules, form &#125; = this.props;</span><br><span class="line">    const &#123; getFieldDecorator, getFieldError &#125; = form;</span><br><span class="line">    return (</span><br><span class="line">      &lt;View style=&#123;styles.inputView&#125;&gt;</span><br><span class="line">      	&#123;getFieldDecorator(prop, &#123;rules&#125;)(</span><br><span class="line">      		&lt;TextInput</span><br><span class="line">              style=&#123;styles.input&#125;</span><br><span class="line">              value=&#123;value || &apos;&apos;&#125;</span><br><span class="line">              label=&#123;`$&#123;label&#125;：`&#125;</span><br><span class="line">              duration=&#123;150&#125;</span><br><span class="line">              onChangeText=&#123;onChange&#125;</span><br><span class="line">              highlightColor=&quot;#40a9ff&quot;</span><br><span class="line">              underlineColorAndroid=&quot;#40a9ff&quot;</span><br><span class="line">            /&gt;</span><br><span class="line">            &lt;View style=&#123;styles.errorinfo&#125;&gt;&#123;this.getError(getFieldError(prop))&#125;&lt;/View&gt;</span><br><span class="line">      	)&#125;</span><br><span class="line">      &lt;/View&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>​    我们可以看到，上面的代码将<code>getFieldDecorator</code>放到了FormItem组件中去，在页面组件中将form对象，prop和rules传递给FormItem组件，然后在FormItem组件中从页面组件传递过来的form对象中取出<code>getFieldDecorator</code>和<code>getFieldError</code>函数，<code>getFieldDecorator</code>函数接收的两个参数fieldName（页面组件传递过来的prop）、fieldOption（页面组件传递过来的rules）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 表单项基类</span><br><span class="line"> */</span><br><span class="line">class BaseFormItem extends Component &#123;</span><br><span class="line">  getError = (error) =&gt; &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">      return error.map(info =&gt; &lt;Text style=&#123;&#123;color: &apos;red&apos;&#125;&#125; key=&#123;info&#125;&gt;&#123;info&#125;&lt;/Text&gt;)</span><br><span class="line">    &#125;</span><br><span class="line">    return null</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>​    每一个表单子项都会有显示错误信息的方法，为了避免写重复代码，我们将显示错误信息的方法抽离出来，并创建一个基类，将该方法放到基类中，让所有表单项来继承这个基类。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">class App extends React.Component &#123;</span><br><span class="line">	constructor(props) &#123;</span><br><span class="line">        super(props)</span><br><span class="line"></span><br><span class="line">        this.state = &#123;</span><br><span class="line">          rules: &#123; // 定义校验规则</span><br><span class="line">            username: [</span><br><span class="line">              	&#123; required: true, message: &apos;请输入手机号!&apos; &#125;,</span><br><span class="line">                &#123;</span><br><span class="line">                  pattern: /^1\d&#123;10&#125;$/,</span><br><span class="line">                  message: &apos;请输入正确的手机号!&apos;,</span><br><span class="line">                &#125;,</span><br><span class="line">                &#123;</span><br><span class="line">                  validator: (rule, value, callback) =&gt; &#123;</span><br><span class="line">                    this.checkUserNameOne(value, callback);</span><br><span class="line">                  &#125;,</span><br><span class="line">                  message: &apos;手机号已经被注册!&apos;,</span><br><span class="line">                &#125;,</span><br><span class="line">            ],</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    render() &#123;</span><br><span class="line">    	const &#123; form &#125; = this.props</span><br><span class="line">        return (</span><br><span class="line">        	&lt;View&gt;</span><br><span class="line">              &lt;FromItem</span><br><span class="line">              	form=&#123;form&#125;</span><br><span class="line">              	prop=&quot;username&quot;</span><br><span class="line">              	rules=&#123;this.state.rules.username&#125;</span><br><span class="line">                autoFocus</span><br><span class="line">                placeholder=&quot;手机号&quot;</span><br><span class="line">              /&gt;</span><br><span class="line">              &lt;Button color=&quot;#40a9ff&quot; onPress=&#123;this.submit&#125; title=&quot;登陆&quot; /&gt;</span><br><span class="line">      		&lt;/View&gt;</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>​    经过改造之后，页面的render函数代码是不是瞬间减少了。但是这个时候我们要考虑另外一个问题，页面中render函数确实被瘦身了，但是表单组件中的render函数却又开始变的臃肿了。如果我们需要来封装一个选择器表单组件，那FormItem中的那段臃肿的代码是不是还要再被重写一遍呢；如果我们后续开发的过程中<strong>rc-form</strong>的实现形式改变了，或者是换了另外一个表单校验插件，那么我们之前封装的表单组件就全部要进行修改；我们封装的表单组件只能用于表单验证，如果想在非表单验证页面上使用的话也是不可以的。综上所述组件与表单验证是强耦合的，我们能不能将<strong>组件</strong>与<strong>表单验证</strong>这两个东西给分开呢？试想一下，组件如果不披表单验证这件外衣它就是一个单纯的组件，如果披了这件外衣，它就是带有表单验证功能的组件，表单验证实现的改变不会影响到组件。怎么才能达到这种理想状态呢？</p>
+<h3 id="装饰者模式"><a href="#装饰者模式" class="headerlink" title="装饰者模式"></a>装饰者模式</h3><p>​    绕了一大圈子，终于把本文的重点<strong>装饰者模式</strong>引了出来。</p>
+<h4 id="什么是装饰者模式？"><a href="#什么是装饰者模式？" class="headerlink" title="什么是装饰者模式？"></a>什么是装饰者模式？</h4><p>​    装饰模式指的是在不必改变原类文件和使用继承的情况下，动态地扩展一个对象的功能。它是通过创建一个包装对象，也就是装饰来包裹真实的对象。通常情况下要给对象扩展功能使用继承的方式，但是继承的方式并不灵活，还会带来许多问题：一方面会导致超类和子类之间存在强耦合性，当超类改变时，子类也会随之改变。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@startuml</span><br><span class="line">Decorator &lt;|-- ConcreteDecoratorA</span><br><span class="line">Decorator &lt;|-- ConcreteDecoratorB</span><br><span class="line"></span><br><span class="line">Component &lt;|-- Decorator</span><br><span class="line">Component &lt;|-- ConcreteComponent</span><br><span class="line"></span><br><span class="line">Decorator o-- Component</span><br><span class="line"></span><br><span class="line">Component: +Operation()</span><br><span class="line">ConcreteComponent: +Operation()</span><br><span class="line">Decorator: +Operation()</span><br><span class="line">class ConcreteDecoratorA &#123;</span><br><span class="line"> &#123;field&#125; addedState</span><br><span class="line"> &#123;method&#125; Operation()</span><br><span class="line">&#125;</span><br><span class="line">ConcreteDecoratorB: +Operation()</span><br><span class="line">ConcreteDecoratorB: AddedBehavior()</span><br><span class="line"></span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 表单项装饰函数（详情可参考React高阶组件）</span><br><span class="line"> * @param &#123;*&#125; WrappedComponent 传入React组件对象</span><br><span class="line"> * @returns 经过加工后新的React组件</span><br><span class="line"> */</span><br><span class="line">const formItemDecorator = function formItemDecorator(WrappedComponent) &#123;</span><br><span class="line">  return class extends Component &#123;</span><br><span class="line">    componentWillMount() &#123;</span><br><span class="line">      const &#123; form, prop, rules &#125; = this.props</span><br><span class="line">      const &#123; getFieldDecorator &#125; = form</span><br><span class="line">      this.fieldDecorator = getFieldDecorator(prop, &#123;rules: [...rules]&#125;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    render() &#123;</span><br><span class="line">      const &#123;form, prop&#125; = this.props</span><br><span class="line">      const &#123;getFieldError&#125; = form</span><br><span class="line">      return (</span><br><span class="line">        &lt;View&gt;</span><br><span class="line">          &#123;this.fieldDecorator(&lt;WrappedComponent &#123;...this.props&#125; error=&#123;getFieldError(prop)&#125; /&gt;)&#125;</span><br><span class="line">        &lt;/View&gt;</span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//InputItem.js中使用</span><br><span class="line">export default formItemDecorator(InputItem)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/06/JavaScript设计模式之装饰者模式（ReactNatiive表单验证）/" data-id="cjnbvav5b000az0fy8fnkk7mm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -148,7 +822,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNPM/">CNPM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
     </div>
   </div>
 
@@ -158,7 +832,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/设计模式/" style="font-size: 10px;">设计模式</a>
+      <a href="/tags/CNPM/" style="font-size: 10px;">CNPM</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/设计模式/" style="font-size: 20px;">设计模式</a>
     </div>
   </div>
 
@@ -167,7 +841,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li></ul>
     </div>
   </div>
 
@@ -180,7 +854,23 @@
       <ul>
         
           <li>
-            <a href="/2018/08/12/JavaScript设计模式之策略模式/">JavaScript设计模式之策略模式</a>
+            <a href="/2018/10/16/JavaScript设计模式之模板方法模式/">JavaScript设计模式之模板方法模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/25/基于Docker搭建CNPM私有仓库/">基于Docker搭建CNPM私有仓库</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/17/JavaScript设计模式之组合模式/">JavaScript设计模式之组合模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/09/JavaScript设计模式之命令模式/">JavaScript设计模式之命令模式</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/04/JavaScript设计模式之发布订阅模式/">JavaScript设计模式之发布订阅模式</a>
           </li>
         
       </ul>
